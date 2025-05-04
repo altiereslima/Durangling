@@ -51,8 +51,8 @@ jobs:
         # Copy managed dependencies
         Copy-Item -Path "Durangling\bin\Release\net9.0\win-x64\Durangling.dll" -Destination "./publish_output/"
         Copy-Item -Path "Durangling.MinecraftWrapper\bin\Release\net9.0\Durangling.MinecraftWrapper.dll" -Destination "./publish_output/"
-        # Add command to copy the native detours.dll
-        Copy-Item -Path "Detours\bin\x64\ReleaseMD\detours.dll" -Destination "./publish_output/"
+        # Update this path based on the actual build output location found in logs
+        Copy-Item -Path "Detours\vc\x64\ReleaseMD\detours.dll" -Destination "./publish_output/" # Example: Path updated
         Write-Host "Manually copied Durangling.dll, Durangling.MinecraftWrapper.dll, and detours.dll to publish_output"
 
     - name: Upload Artifact
