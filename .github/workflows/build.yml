@@ -59,8 +59,17 @@ jobs:
     - name: Copy Dependencies and Detours Output to Publish Folder
       shell: pwsh # Use PowerShell for Copy-Item
       run: |
-        # Copy managed dependencies
-        Copy-Item -Path "Durangling\bin\Release\net9.0\win-x64\Durangling.dll" -Destination "./publish_output/"
+        # Copy entire Durangling win-x64 output directory
+        $duranglingSourceDir = "Durangling\bin\Release\net9.0\win-x64"
+        if (Test-Path $duranglingSourceDir) {
+            Copy-Item -Path "$duranglingSourceDir\*" -Destination "./publish_output/" -Recurse -Force
+            Write-Host "Manually copied Durangling output directory from $duranglingSourceDir"
+        } else {
+            Write-Error "Durangling output directory not found at expected path: $duranglingSourceDir."
+            # Optionally exit here if this directory is critical: exit 1
+        }
+
+        # Copy MinecraftWrapper dependency
         Copy-Item -Path "Durangling.MinecraftWrapper\bin\Release\net9.0\Durangling.MinecraftWrapper.dll" -Destination "./publish_output/"
 
         # Define the expected path for the Detours output directory (!!! UPDATE THIS PATH BASED ON BUILD LOGS !!!)
@@ -77,7 +86,7 @@ jobs:
             exit 1 # Fail the workflow step
         }
 
-        Write-Host "Manually copied Durangling.dll, Durangling.MinecraftWrapper.dll, and Detours output to publish_output"
+        Write-Host "Manually copied Durangling output, Durangling.MinecraftWrapper.dll, and Detours output to publish_output"
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
