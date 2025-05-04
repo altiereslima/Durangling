@@ -33,16 +33,13 @@ jobs:
       run: msbuild Detours\vc\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
       # Ensures Detours is built with the specific configuration required by README
 
-    - name: Build Solution (excluding Detours if already built)
-      # Changed Configuration to Debug and Platform to "Any CPU" based on Durangling.sln
-      # This step might now primarily build the C# projects or skip Detours if up-to-date
-      run: msbuild Durangling.sln /p:Configuration=Debug /p:Platform="Any CPU"
-      # Compila a solução inteira
+    # Removed the separate 'msbuild Durangling.sln' step.
+    # 'dotnet publish' below will handle building the required C# projects.
 
     - name: Publish Mod Project
       # Substitua 'TestgroundMod' pelo nome real do seu projeto de mod se for diferente
       # O caminho 'TestgroundMod\TestgroundMod.csproj' pode precisar ser ajustado
-      # Publishing with Release configuration, independent of the solution build config used for Detours
+      # Publishing with Release configuration. This will also build TestgroundMod and its C# dependencies.
       run: dotnet publish TestgroundMod\TestgroundMod.csproj --configuration Release --runtime win-x64 --output ./publish_output
       # Publica o projeto do mod para a pasta 'publish_output'
 
