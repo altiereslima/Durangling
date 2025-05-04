@@ -12,11 +12,18 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      # Add this line to ensure submodules (like Detours, potentially) are checked out
+      with:
+        submodules: recursive
 
     - name: Setup .NET SDK 9.0
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x' # Especifica a versão do .NET SDK
+
+    # Add this new step to restore NuGet packages
+    - name: Restore NuGet packages
+      run: dotnet restore Durangling.sln
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2 # Configura o ambiente MSBuild/VS
