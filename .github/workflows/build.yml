@@ -55,28 +55,29 @@ jobs:
       run: dotnet publish TestgroundMod\TestgroundMod.csproj --configuration Release --runtime win-x64 --output ./publish_output -v diag
       # Publica o projeto do mod para a pasta 'publish_output'
 
-    # Add this step to manually copy missing dependency DLLs
-    - name: Copy Dependency DLLs to Publish Output
+    # Add this step to manually copy missing dependency DLLs and Detours output
+    - name: Copy Dependencies and Detours Output to Publish Folder
       shell: pwsh # Use PowerShell for Copy-Item
       run: |
         # Copy managed dependencies
         Copy-Item -Path "Durangling\bin\Release\net9.0\win-x64\Durangling.dll" -Destination "./publish_output/"
         Copy-Item -Path "Durangling.MinecraftWrapper\bin\Release\net9.0\Durangling.MinecraftWrapper.dll" -Destination "./publish_output/"
 
-        # Define the expected path for detours.dll (!!! UPDATE THIS PATH BASED ON BUILD LOGS !!!)
-        $detoursSourcePath = "Detours\vc\x64\ReleaseMD\detours.dll"
+        # Define the expected path for the Detours output directory (!!! UPDATE THIS PATH BASED ON BUILD LOGS !!!)
+        $detoursSourceDir = "Detours\vc\x64\ReleaseMD"
         $detoursDestination = "./publish_output/"
 
-        # Check if the file exists before copying
-        if (Test-Path $detoursSourcePath) {
-            Copy-Item -Path $detoursSourcePath -Destination $detoursDestination
-            Write-Host "Manually copied detours.dll from $detoursSourcePath"
+        # Check if the source directory exists before copying
+        if (Test-Path $detoursSourceDir) {
+            # Copy the entire directory content recursively
+            Copy-Item -Path "$detoursSourceDir\*" -Destination $detoursDestination -Recurse -Force
+            Write-Host "Manually copied Detours output directory from $detoursSourceDir"
         } else {
-            Write-Error "Detours DLL not found at expected path: $detoursSourcePath. Please check build logs and update the path in the workflow."
+            Write-Error "Detours output directory not found at expected path: $detoursSourceDir. Please check build logs and update the path in the workflow."
             exit 1 # Fail the workflow step
         }
 
-        Write-Host "Manually copied Durangling.dll, Durangling.MinecraftWrapper.dll, and detours.dll to publish_output"
+        Write-Host "Manually copied Durangling.dll, Durangling.MinecraftWrapper.dll, and Detours output to publish_output"
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
