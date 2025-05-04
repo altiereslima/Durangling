@@ -1,3 +1,4 @@
+# This workflow builds the Durangling modding library for Minecraft: Xbox One Edition
 name: Build
 
 on:
@@ -8,12 +9,20 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        configuration: [Release]
+
     runs-on: windows-latest
-    
+
+    env:
+      Solution_Name: Durangling.sln
+
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: recursive
+        fetch-depth: 0
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -21,22 +30,10 @@ jobs:
         dotnet-version: 9.0.x
         
     - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.3.1
+      uses: microsoft/setup-msbuild@v2
         
-    - name: Debug Directory Structure
-      shell: cmd
-      run: |
-        echo "Current directory:"
-        cd
-        echo "Root directory contents:"
-        dir
-        echo "Checking Detours directory:"
-        if exist "Detours" (
-          echo "Detours directory found"
-          dir "Detours"
-        ) else (
-          echo "Detours directory not found"
-        )
+    - name: Restore Dependencies
+      run: dotnet restore $env:Solution_Name
         
     - name: Build Detours
       shell: cmd
@@ -55,15 +52,15 @@ jobs:
         )
         
     - name: Build Solution
-      run: dotnet build Durangling.sln -c Release
+      run: dotnet build $env:Solution_Name -c ${{ matrix.configuration }} --no-restore
         
     - name: Publish
-      run: dotnet publish Durangling.sln -c Release
+      run: dotnet publish $env:Solution_Name -c ${{ matrix.configuration }} --no-build
         
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Durangling-Build
+        name: Durangling-${{ matrix.configuration }}
         path: |
-          **/bin/Release/net9.0/win-x64/publish/*
-          !**/bin/Release/net9.0/win-x64/publish/*.pdb
+          **/bin/${{ matrix.configuration }}/net9.0/win-x64/publish/*
+          !**/bin/${{ matrix.configuration }}/net9.0/win-x64/publish/*.pdb
