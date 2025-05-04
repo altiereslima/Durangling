@@ -1,66 +1,38 @@
-# This workflow builds the Durangling modding library for Minecraft: Xbox One Edition
-name: Build
+name: Build Durangling
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches: [ "master" ] # Gatilho para pushes na branch main
+  workflow_dispatch: # Permite acionar manualmente
 
 jobs:
   build:
-    runs-on: windows-latest
-
-    env:
-      Solution_Name: Durangling.sln
+    runs-on: windows-latest # Usa um runner Windows pois precisa do MSBuild e C++
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-        fetch-depth: 0
-    
-    - name: Setup Visual Studio Developer Environment
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-        sdk: '10.0.22000.0'
-        vsversion: '2022'
-        
-    - name: Setup .NET
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK 9.0
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.x
-        
-    - name: Restore Dependencies
-      run: dotnet restore $env:Solution_Name
+        dotnet-version: '9.0.x' # Especifica a versão do .NET SDK
 
-    - name: Debug Solution Configuration
-      shell: cmd
-      run: |
-        echo "=== Solution Structure ==="
-        type %Solution_Name%
-        echo "=== Directory Structure ==="
-        dir /s
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2 # Configura o ambiente MSBuild/VS
 
-    - name: Build Detours
-      shell: cmd
-      run: |
-        msbuild Detours\vc\Detours.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /verbosity:detailed || exit 1
-        
-    - name: Build Solution
-      shell: cmd
-      run: |
-        msbuild %Solution_Name% /p:Configuration=Release /p:Platform=x86 /verbosity:detailed || exit 1
-        
-    - name: Publish
-      shell: cmd
-      run: dotnet publish %Solution_Name% --configuration Release --no-build || exit 1
-        
-    - name: Upload Artifacts
+    - name: Build Solution (including Detours)
+      run: msbuild Durangling.sln /p:Configuration=ReleaseMD /p:Platform=x64
+      # Compila a solução inteira com a configuração necessária para Detours
+
+    - name: Publish Mod Project
+      # Substitua 'TestgroundMod' pelo nome real do seu projeto de mod se for diferente
+      # O caminho 'TestgroundMod\TestgroundMod.csproj' pode precisar ser ajustado
+      run: dotnet publish TestgroundMod\TestgroundMod.csproj --configuration Release --runtime win-x64 --output ./publish_output
+      # Publica o projeto do mod para a pasta 'publish_output'
+
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Durangling-Release
-        path: |
-          **/bin/Release/**/publish/*
-          !**/bin/Release/**/publish/*.pdb
+        name: Durangling-Build # Nome do artefato para download
+        path: ./publish_output # Caminho para os arquivos que serão incluídos no artefato
