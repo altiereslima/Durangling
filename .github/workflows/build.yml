@@ -9,10 +9,6 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        configuration: [Release]
-
     runs-on: windows-latest
 
     env:
@@ -39,6 +35,11 @@ jobs:
     - name: Restore Dependencies
       run: dotnet restore $env:Solution_Name
 
+    - name: Debug Solution Configuration
+      run: |
+        echo "Available solution configurations:"
+        type $env:Solution_Name | findstr "ConfigurationPlatforms"
+
     - name: Build Detours
       run: |
         dir /s Detours\vc
@@ -46,15 +47,15 @@ jobs:
         
     - name: Build Solution
       run: |
-        msbuild $env:Solution_Name /p:Configuration=Release /p:Platform=AnyCPU /verbosity:detailed
+        msbuild $env:Solution_Name /p:Configuration=Release /p:Platform="Any CPU" /verbosity:detailed
         
     - name: Publish
-      run: dotnet publish $env:Solution_Name -c Release --no-build
+      run: dotnet publish $env:Solution_Name -c Release -p:Platform="Any CPU" --no-build
         
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Durangling-Release
         path: |
-          **/bin/Release/**/publish/*
-          !**/bin/Release/**/publish/*.pdb
+          **/bin/Release/Any CPU/publish/*
+          !**/bin/Release/Any CPU/publish/*.pdb
