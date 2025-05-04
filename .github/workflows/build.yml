@@ -44,6 +44,14 @@ jobs:
       run: dotnet publish TestgroundMod\TestgroundMod.csproj --configuration Release --runtime win-x64 --output ./publish_output -v diag
       # Publica o projeto do mod para a pasta 'publish_output'
 
+    # Add this step to manually copy missing dependency DLLs
+    - name: Copy Dependency DLLs to Publish Output
+      shell: pwsh # Use PowerShell for Copy-Item
+      run: |
+        Copy-Item -Path "Durangling\bin\Release\net9.0\win-x64\Durangling.dll" -Destination "./publish_output/"
+        Copy-Item -Path "Durangling.MinecraftWrapper\bin\Release\net9.0\Durangling.MinecraftWrapper.dll" -Destination "./publish_output/"
+        Write-Host "Manually copied Durangling.dll and Durangling.MinecraftWrapper.dll to publish_output"
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
