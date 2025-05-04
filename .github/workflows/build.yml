@@ -36,26 +36,31 @@ jobs:
       run: dotnet restore $env:Solution_Name
 
     - name: Debug Solution Configuration
+      shell: cmd
       run: |
-        echo "Available solution configurations:"
-        type $env:Solution_Name | findstr "ConfigurationPlatforms"
+        echo "=== Solution Structure ==="
+        type %Solution_Name%
+        echo "=== Directory Structure ==="
+        dir /s
 
     - name: Build Detours
+      shell: cmd
       run: |
-        dir /s Detours\vc
-        msbuild Detours\vc\Detours.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /verbosity:detailed
+        msbuild Detours\vc\Detours.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /verbosity:detailed || exit 1
         
     - name: Build Solution
+      shell: cmd
       run: |
-        msbuild $env:Solution_Name /p:Configuration=Release /p:Platform="Any CPU" /verbosity:detailed
+        msbuild %Solution_Name% /p:Configuration=Release /p:Platform=x86 /verbosity:detailed || exit 1
         
     - name: Publish
-      run: dotnet publish $env:Solution_Name -c Release -p:Platform="Any CPU" --no-build
+      shell: cmd
+      run: dotnet publish %Solution_Name% --configuration Release --no-build || exit 1
         
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Durangling-Release
         path: |
-          **/bin/Release/Any CPU/publish/*
-          !**/bin/Release/Any CPU/publish/*.pdb
+          **/bin/Release/**/publish/*
+          !**/bin/Release/**/publish/*.pdb
