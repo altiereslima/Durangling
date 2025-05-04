@@ -42,10 +42,10 @@ jobs:
       shell: cmd
       run: |
         if exist "Detours" (
-          if exist "Detours\Detours.vcxproj" (
-            msbuild Detours\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
+          if exist "Detours\vc\Detours.vcxproj" (
+            msbuild Detours\vc\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
           ) else (
-            echo "Error: Could not find Detours.vcxproj in Detours directory"
+            echo "Error: Could not find Detours.vcxproj in Detours/vc directory"
             dir /s /b "Detours"
             exit 1
           )
