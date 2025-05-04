@@ -25,3 +25,7 @@ developing:
     - `dotnet publish <YourModProjectName>`
 7. copy files from `<YourModProjectName>\bin\Release\net9.0\win-x64\publish` to `<MinecraftDumpFolder>\Mods`
 8. start the game
+
+### CI Builds
+
+You can download the latest successful build from the [Actions tab](../../actions). Look for the most recent successful workflow run and download the `Durangling-Build` artifact.

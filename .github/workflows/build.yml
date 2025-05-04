@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+        
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.3.1
+        
+    - name: Build Detours
+      run: |
+        cd Detours
+        msbuild /p:Configuration=ReleaseMD /p:Platform=x64
+        
+    - name: Build Solution
+      run: dotnet build -c Release
+        
+    - name: Publish
+      run: dotnet publish -c Release
+        
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Durangling-Build
+        path: |
+          **/bin/Release/net9.0/win-x64/publish/*
+          !**/bin/Release/net9.0/win-x64/publish/*.pdb
