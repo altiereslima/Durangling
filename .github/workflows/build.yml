@@ -28,11 +28,16 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2 # Configura o ambiente MSBuild/VS
 
-    - name: Build Solution (including Detours)
+    # Add a dedicated step to build Detours explicitly
+    - name: Build Detours (x64 ReleaseMD)
+      run: msbuild Detours\vc\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
+      # Ensures Detours is built with the specific configuration required by README
+
+    - name: Build Solution (excluding Detours if already built)
       # Changed Configuration to Debug and Platform to "Any CPU" based on Durangling.sln
-      # This should build Detours with ReleaseMD|x64 due to project configuration mappings
+      # This step might now primarily build the C# projects or skip Detours if up-to-date
       run: msbuild Durangling.sln /p:Configuration=Debug /p:Platform="Any CPU"
-      # Compila a solução inteira com a configuração necessária para Detours
+      # Compila a solução inteira
 
     - name: Publish Mod Project
       # Substitua 'TestgroundMod' pelo nome real do seu projeto de mod se for diferente
