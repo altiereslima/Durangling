@@ -12,6 +12,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -21,14 +23,23 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1.3.1
         
-    - name: List Directory Contents
+    - name: Debug Directory Structure
       run: |
-        dir
-        dir Detours
+        echo "Current directory:"
+        pwd
+        echo "Directory contents:"
+        dir /s /b Detours
         
     - name: Build Detours
       run: |
-        msbuild Detours/Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
+        if exist "Detours\src\Detours.vcxproj" (
+          msbuild Detours\src\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
+        ) else if exist "external\Detours\Detours.vcxproj" (
+          msbuild external\Detours\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
+        ) else (
+          echo "Error: Could not find Detours.vcxproj"
+          exit 1
+        )
         
     - name: Build Solution
       run: dotnet build Durangling.sln -c Release
