@@ -33,6 +33,17 @@ jobs:
       run: msbuild Detours\vc\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
       # Ensures Detours is built with the specific configuration required by README
 
+    # Add step to list potential Detours output directories for debugging
+    - name: List Detours Build Output Directory
+      shell: pwsh
+      run: |
+        Write-Host "Checking potential Detours output directories..."
+        Get-ChildItem -Path "Detours" -Recurse -Filter "detours.dll" -ErrorAction SilentlyContinue | Select-Object FullName, LastWriteTime
+        Write-Host "Listing Detours\vc\x64\ReleaseMD contents:"
+        Get-ChildItem -Path "Detours\vc\x64\ReleaseMD" -ErrorAction SilentlyContinue
+        Write-Host "Listing Detours\bin\x64\ReleaseMD contents:"
+        Get-ChildItem -Path "Detours\bin\x64\ReleaseMD" -ErrorAction SilentlyContinue
+
     # Removed the separate 'msbuild Durangling.sln' step.
     # 'dotnet publish' below will handle building the required C# projects.
 
@@ -51,8 +62,20 @@ jobs:
         # Copy managed dependencies
         Copy-Item -Path "Durangling\bin\Release\net9.0\win-x64\Durangling.dll" -Destination "./publish_output/"
         Copy-Item -Path "Durangling.MinecraftWrapper\bin\Release\net9.0\Durangling.MinecraftWrapper.dll" -Destination "./publish_output/"
-        # Update this path based on the actual build output location found in logs
-        Copy-Item -Path "Detours\vc\x64\ReleaseMD\detours.dll" -Destination "./publish_output/" # Example: Path updated
+
+        # Define the expected path for detours.dll (!!! UPDATE THIS PATH BASED ON BUILD LOGS !!!)
+        $detoursSourcePath = "Detours\vc\x64\ReleaseMD\detours.dll"
+        $detoursDestination = "./publish_output/"
+
+        # Check if the file exists before copying
+        if (Test-Path $detoursSourcePath) {
+            Copy-Item -Path $detoursSourcePath -Destination $detoursDestination
+            Write-Host "Manually copied detours.dll from $detoursSourcePath"
+        } else {
+            Write-Error "Detours DLL not found at expected path: $detoursSourcePath. Please check build logs and update the path in the workflow."
+            exit 1 # Fail the workflow step
+        }
+
         Write-Host "Manually copied Durangling.dll, Durangling.MinecraftWrapper.dll, and detours.dll to publish_output"
 
     - name: Upload Artifact
