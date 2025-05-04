@@ -22,13 +22,15 @@ jobs:
       uses: microsoft/setup-msbuild@v2 # Configura o ambiente MSBuild/VS
 
     - name: Build Solution (including Detours)
-      # Update Configuration and Platform to match a valid pair from Durangling.sln
-      run: msbuild Durangling.sln /p:Configuration=Debug /p:Platform=x64
+      # Changed Configuration to Debug and Platform to "Any CPU" based on Durangling.sln
+      # This should build Detours with ReleaseMD|x64 due to project configuration mappings
+      run: msbuild Durangling.sln /p:Configuration=Debug /p:Platform="Any CPU"
       # Compila a solução inteira com a configuração necessária para Detours
 
     - name: Publish Mod Project
       # Substitua 'TestgroundMod' pelo nome real do seu projeto de mod se for diferente
       # O caminho 'TestgroundMod\TestgroundMod.csproj' pode precisar ser ajustado
+      # Publishing with Release configuration, independent of the solution build config used for Detours
       run: dotnet publish TestgroundMod\TestgroundMod.csproj --configuration Release --runtime win-x64 --output ./publish_output
       # Publica o projeto do mod para a pasta 'publish_output'
 
