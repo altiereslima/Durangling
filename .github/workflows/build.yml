@@ -22,7 +22,8 @@ jobs:
       uses: microsoft/setup-msbuild@v2 # Configura o ambiente MSBuild/VS
 
     - name: Build Solution (including Detours)
-      run: msbuild Durangling.sln /p:Configuration=ReleaseMD /p:Platform=x64
+      # Changed Configuration from ReleaseMD to Release
+      run: msbuild Durangling.sln /p:Configuration=Release /p:Platform=x64
       # Compila a solução inteira com a configuração necessária para Detours
 
     - name: Publish Mod Project
