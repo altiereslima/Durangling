@@ -24,23 +24,13 @@ jobs:
         submodules: recursive
         fetch-depth: 0
     
-    - name: Setup Visual Studio Environment
-      uses: microsoft/setup-msbuild@v2
+    - name: Setup Visual Studio Developer Environment
+      uses: ilammy/msvc-dev-cmd@v1
       with:
-        vs-version: '[17.0,18.0)'
-        msbuild-architecture: x64
-
-    - name: Install Visual C++ Build Tools
-      shell: cmd
-      run: |
-        curl -o vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe
-        vs_buildtools.exe --passive --wait --norestart --nocache ^
-          --installPath "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools" ^
-          --add Microsoft.VisualStudio.Workload.VCTools ^
-          --add Microsoft.VisualStudio.Component.Windows10SDK ^
-          --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64
-        if not %ERRORLEVEL%==0 if not %ERRORLEVEL%==3010 exit %ERRORLEVEL%
-
+        arch: x64
+        sdk: '10.0.22000.0'
+        vsversion: '2022'
+        
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -48,22 +38,10 @@ jobs:
         
     - name: Restore Dependencies
       run: dotnet restore $env:Solution_Name
-        
+
     - name: Build Detours
-      shell: cmd
       run: |
-        if exist "Detours" (
-          if exist "Detours\vc\Detours.vcxproj" (
-            msbuild Detours\vc\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64 /p:PlatformToolset=v143
-          ) else (
-            echo "Error: Could not find Detours.vcxproj in Detours/vc directory"
-            dir /s /b "Detours"
-            exit 1
-          )
-        ) else (
-          echo "Error: Detours directory not found"
-          exit 1
-        )
+        msbuild Detours\vc\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64 /p:PlatformToolset=v143
         
     - name: Build Solution
       run: dotnet build $env:Solution_Name -c ${{ matrix.configuration }} --no-restore
