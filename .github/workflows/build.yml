@@ -24,20 +24,33 @@ jobs:
       uses: microsoft/setup-msbuild@v1.3.1
         
     - name: Debug Directory Structure
+      shell: cmd
       run: |
         echo "Current directory:"
-        pwd
-        echo "Directory contents:"
-        dir /s /b Detours
+        cd
+        echo "Root directory contents:"
+        dir
+        echo "Checking Detours directory:"
+        if exist "Detours" (
+          echo "Detours directory found"
+          dir "Detours"
+        ) else (
+          echo "Detours directory not found"
+        )
         
     - name: Build Detours
+      shell: cmd
       run: |
-        if exist "Detours\src\Detours.vcxproj" (
-          msbuild Detours\src\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
-        ) else if exist "external\Detours\Detours.vcxproj" (
-          msbuild external\Detours\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
+        if exist "Detours" (
+          if exist "Detours\Detours.vcxproj" (
+            msbuild Detours\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
+          ) else (
+            echo "Error: Could not find Detours.vcxproj in Detours directory"
+            dir /s /b "Detours"
+            exit 1
+          )
         ) else (
-          echo "Error: Could not find Detours.vcxproj"
+          echo "Error: Detours directory not found"
           exit 1
         )
         
