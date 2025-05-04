@@ -41,18 +41,20 @@ jobs:
 
     - name: Build Detours
       run: |
-        msbuild Detours\vc\Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64 /p:PlatformToolset=v143
+        dir /s Detours\vc
+        msbuild Detours\vc\Detours.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143 /verbosity:detailed
         
     - name: Build Solution
-      run: dotnet build $env:Solution_Name -c ${{ matrix.configuration }} --no-restore
+      run: |
+        msbuild $env:Solution_Name /p:Configuration=Release /p:Platform=AnyCPU /verbosity:detailed
         
     - name: Publish
-      run: dotnet publish $env:Solution_Name -c ${{ matrix.configuration }} --no-build
+      run: dotnet publish $env:Solution_Name -c Release --no-build
         
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Durangling-${{ matrix.configuration }}
+        name: Durangling-Release
         path: |
-          **/bin/${{ matrix.configuration }}/net9.0/win-x64/publish/*
-          !**/bin/${{ matrix.configuration }}/net9.0/win-x64/publish/*.pdb
+          **/bin/Release/**/publish/*
+          !**/bin/Release/**/publish/*.pdb
