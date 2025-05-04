@@ -21,16 +21,20 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1.3.1
         
+    - name: List Directory Contents
+      run: |
+        dir
+        dir Detours
+        
     - name: Build Detours
       run: |
-        cd Detours
-        msbuild /p:Configuration=ReleaseMD /p:Platform=x64
+        msbuild Detours/Detours.vcxproj /p:Configuration=ReleaseMD /p:Platform=x64
         
     - name: Build Solution
-      run: dotnet build -c Release
+      run: dotnet build Durangling.sln -c Release
         
     - name: Publish
-      run: dotnet publish -c Release
+      run: dotnet publish Durangling.sln -c Release
         
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
